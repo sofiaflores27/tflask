@@ -15,6 +15,8 @@ def register():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
+        verif_password = request.form['verif_password']
+        email = request.form['email']
         db = get_db()
         error = None
 
@@ -24,11 +26,13 @@ def register():
             error = 'Password is required.'
         elif verif_password != password:
             error = 'ERROR no coincide la contraseña'
+        elif not email:
+            error = 'Email is required'
         if error is None:
             try:
                 db.execute(
-                    "INSERT INTO user (username, password, verif_password) VALUES (?, ?,?)",
-                    (username, generate_password_hash(password), verif_password),
+                    "INSERT INTO user (username, password, verif_password, email) VALUES (?, ?,?, ?)",
+                    (username, generate_password_hash(password), verif_password, email),
                 )
                 db.commit()
             except db.IntegrityError:
@@ -68,6 +72,7 @@ def login():
 @bp.before_app_request
 def load_logged_in_user():
     user_id = session.get('user_id')
+
 
     if user_id is None:
         g.user = None
